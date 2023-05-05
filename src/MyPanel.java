@@ -35,7 +35,7 @@ public class MyPanel extends JPanel implements ActionListener {
     private Image pacman3up, pacman3down, pacman3left, pacman3right;
     private Image pacman4up, pacman4down, pacman4left, pacman4right;
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
-    private int req_dx, req_dy;
+    private int req_dx, req_dy, view_dx, view_dy;
     private final int validSpeed[] = {1, 2, 3, 4, 6, 8};
     private int currentSpeed = 3;
     private int maxSpeed = 6;
@@ -123,8 +123,72 @@ public class MyPanel extends JPanel implements ActionListener {
         for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) {
             screenData[i] = levelData[i];
         }
-//ths function is left to define
-        //continueLevel();
+        continueLevel();
+    }
+
+    private void continueLevel() {
+
+        short i;
+        int dx = 1;
+        int random;
+
+        for (i = 0; i < N_GHOSTS; i++) {
+
+            ghost_y[i] = 4 * BLOCK_SIZE;
+            ghost_x[i] = 4 * BLOCK_SIZE;
+            ghost_dy[i] = 0;
+            ghost_dx[i] = dx;
+            dx = -dx;
+            random = (int) (Math.random() * (currentSpeed + 1));
+
+            if (random > currentSpeed) {
+                random = currentSpeed;
+            }
+
+            ghostSpeed[i] = validSpeed[random];
+        }
+
+        pacman_x = 7 * BLOCK_SIZE;
+        pacman_y = 11 * BLOCK_SIZE;
+        pacmand_x = 0;
+        pacmand_y = 0;
+        req_dx = 0;
+        req_dy = 0;
+        view_dx = -1;
+        view_dy = 0;
+        dying = false;
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        doDrawing(g);
+    }
+    private void doDrawing(Graphics g) {
+
+        Graphics2D g2d = (Graphics2D) g;
+
+        g2d.setColor(Color.black);
+        g2d.fillRect(0, 0, d.width, d.height);
+
+
+        //left to define-------------------------------
+//        drawMaze(g2d);
+//        drawScore(g2d);
+//        doAnim();
+
+        if (inGame) {
+            //left to define-------------------------------
+//            playGame(g2d);
+        } else {
+            //left to define-------------------------------
+//            showIntroScreen(g2d);
+        }
+
+        g2d.drawImage(ii, 5, 5, this);
+        Toolkit.getDefaultToolkit().sync();
+        g2d.dispose();
     }
 
 
