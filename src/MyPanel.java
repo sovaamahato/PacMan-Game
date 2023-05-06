@@ -9,6 +9,9 @@ public class MyPanel extends JPanel implements ActionListener {
 
 
     private Color mazeColor;
+    private Image ii;
+
+    private int pacmanAnimPos = 0;
     private Dimension d;
     private final Font smallFont = new Font("Helvetica", Font.BOLD, 14);
     private boolean inGame = false;
@@ -126,6 +129,277 @@ public class MyPanel extends JPanel implements ActionListener {
         continueLevel();
     }
 
+    ///////////////////////////////////////////////////////playgame function----------------------------------------------------
+    private void playGame(Graphics2D g2d) {
+
+        if (dying) {
+
+            death();
+
+        } else {
+
+            movePacman();
+            drawPacman(g2d);
+            moveGhosts(g2d);
+            checkMaze();
+        }
+    }
+
+    private void movePacman() {
+
+        int pos;
+        short ch;
+
+        if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
+            pacmand_x = req_dx;
+            pacmand_y = req_dy;
+            view_dx = pacmand_x;
+            view_dy = pacmand_y;
+        }
+
+        if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
+            pos = pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE);
+            ch = screenData[pos];
+
+            if ((ch & 16) != 0) {
+                screenData[pos] = (short) (ch & 15);
+                score++;
+            }
+
+            if (req_dx != 0 || req_dy != 0) {
+                if (!((req_dx == -1 && req_dy == 0 && (ch & 1) != 0)
+                        || (req_dx == 1 && req_dy == 0 && (ch & 4) != 0)
+                        || (req_dx == 0 && req_dy == -1 && (ch & 2) != 0)
+                        || (req_dx == 0 && req_dy == 1 && (ch & 8) != 0))) {
+                    pacmand_x = req_dx;
+                    pacmand_y = req_dy;
+                    view_dx = pacmand_x;
+                    view_dy = pacmand_y;
+                }
+            }
+
+            // Check for standstill
+            if ((pacmand_x == -1 && pacmand_y == 0 && (ch & 1) != 0)
+                    || (pacmand_x == 1 && pacmand_y == 0 && (ch & 4) != 0)
+                    || (pacmand_x == 0 && pacmand_y == -1 && (ch & 2) != 0)
+                    || (pacmand_x == 0 && pacmand_y == 1 && (ch & 8) != 0)) {
+                pacmand_x = 0;
+                pacmand_y = 0;
+            }
+        }
+        pacman_x = pacman_x + PACMAN_SPEED * pacmand_x;
+        pacman_y = pacman_y + PACMAN_SPEED * pacmand_y;
+    }
+    private void drawPacman(Graphics2D g2d) {
+
+        if (view_dx == -1) {
+            drawPacnanLeft(g2d);
+        } else if (view_dx == 1) {
+            drawPacmanRight(g2d);
+        } else if (view_dy == -1) {
+            drawPacmanUp(g2d);
+        } else {
+            drawPacmanDown(g2d);
+        }
+    }
+
+
+
+    //to draw pacman for different direction -------------------------------------------------------------------------------------------------------
+    private void drawPacmanUp(Graphics2D g2d) {
+
+        switch (pacmanAnimPos) {
+            case 1:
+                g2d.drawImage(pacman2up, pacman_x + 1, pacman_y + 1, this);
+                break;
+            case 2:
+                g2d.drawImage(pacman3up, pacman_x + 1, pacman_y + 1, this);
+                break;
+            case 3:
+                g2d.drawImage(pacman4up, pacman_x + 1, pacman_y + 1, this);
+                break;
+            default:
+                g2d.drawImage(pacman1, pacman_x + 1, pacman_y + 1, this);
+                break;
+        }
+    }
+
+    private void drawPacmanDown(Graphics2D g2d) {
+
+        switch (pacmanAnimPos) {
+            case 1:
+                g2d.drawImage(pacman2down, pacman_x + 1, pacman_y + 1, this);
+                break;
+            case 2:
+                g2d.drawImage(pacman3down, pacman_x + 1, pacman_y + 1, this);
+                break;
+            case 3:
+                g2d.drawImage(pacman4down, pacman_x + 1, pacman_y + 1, this);
+                break;
+            default:
+                g2d.drawImage(pacman1, pacman_x + 1, pacman_y + 1, this);
+                break;
+        }
+    }
+
+    private void drawPacnanLeft(Graphics2D g2d) {
+
+        switch (pacmanAnimPos) {
+            case 1:
+                g2d.drawImage(pacman2left, pacman_x + 1, pacman_y + 1, this);
+                break;
+            case 2:
+                g2d.drawImage(pacman3left, pacman_x + 1, pacman_y + 1, this);
+                break;
+            case 3:
+                g2d.drawImage(pacman4left, pacman_x + 1, pacman_y + 1, this);
+                break;
+            default:
+                g2d.drawImage(pacman1, pacman_x + 1, pacman_y + 1, this);
+                break;
+        }
+    }
+
+    private void drawPacmanRight(Graphics2D g2d) {
+
+        switch (pacmanAnimPos) {
+            case 1:
+                g2d.drawImage(pacman2right, pacman_x + 1, pacman_y + 1, this);
+                break;
+            case 2:
+                g2d.drawImage(pacman3right, pacman_x + 1, pacman_y + 1, this);
+                break;
+            case 3:
+                g2d.drawImage(pacman4right, pacman_x + 1, pacman_y + 1, this);
+                break;
+            default:
+                g2d.drawImage(pacman1, pacman_x + 1, pacman_y + 1, this);
+                break;
+        }
+    }
+    private void checkMaze() {
+
+        short i = 0;
+        boolean finished = true;
+
+        while (i < N_BLOCKS * N_BLOCKS && finished) {
+
+            if ((screenData[i] & 48) != 0) {
+                finished = false;
+            }
+
+            i++;
+        }
+
+        if (finished) {
+
+            score += 50;
+
+            if (N_GHOSTS < MAX_GHOSTS) {
+                N_GHOSTS++;
+            }
+
+            if (currentSpeed < maxSpeed) {
+                currentSpeed++;
+            }
+
+            initLevel();
+        }
+    }
+
+    private void death() {
+
+        lives--;
+
+        if (lives == 0) {
+            inGame = false;
+        }
+
+        continueLevel();
+    }
+    //----------------------------------------------------------------------------------------------------------------------
+
+    private void moveGhosts(Graphics2D g2d) {
+
+        short i;
+        int pos;
+        int count;
+
+        for (i = 0; i < N_GHOSTS; i++) {
+            if (ghost_x[i] % BLOCK_SIZE == 0 && ghost_y[i] % BLOCK_SIZE == 0) {
+                pos = ghost_x[i] / BLOCK_SIZE + N_BLOCKS * (int) (ghost_y[i] / BLOCK_SIZE);
+
+                count = 0;
+
+                if ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1) {
+                    dx[count] = -1;
+                    dy[count] = 0;
+                    count++;
+                }
+
+                if ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1) {
+                    dx[count] = 0;
+                    dy[count] = -1;
+                    count++;
+                }
+
+                if ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1) {
+                    dx[count] = 1;
+                    dy[count] = 0;
+                    count++;
+                }
+
+                if ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1) {
+                    dx[count] = 0;
+                    dy[count] = 1;
+                    count++;
+                }
+
+                if (count == 0) {
+
+                    if ((screenData[pos] & 15) == 15) {
+                        ghost_dx[i] = 0;
+                        ghost_dy[i] = 0;
+                    } else {
+                        ghost_dx[i] = -ghost_dx[i];
+                        ghost_dy[i] = -ghost_dy[i];
+                    }
+
+                } else {
+
+                    count = (int) (Math.random() * count);
+
+                    if (count > 3) {
+                        count = 3;
+                    }
+
+                    ghost_dx[i] = dx[count];
+                    ghost_dy[i] = dy[count];
+                }
+
+            }
+
+            ghost_x[i] = ghost_x[i] + (ghost_dx[i] * ghostSpeed[i]);
+            ghost_y[i] = ghost_y[i] + (ghost_dy[i] * ghostSpeed[i]);
+            drawGhost(g2d, ghost_x[i] + 1, ghost_y[i] + 1);
+
+            if (pacman_x > (ghost_x[i] - 12) && pacman_x < (ghost_x[i] + 12)
+                    && pacman_y > (ghost_y[i] - 12) && pacman_y < (ghost_y[i] + 12)
+                    && inGame) {
+
+                dying = true;
+            }
+        }
+    }
+    private void drawGhost(Graphics2D g2d, int x, int y) {
+
+        g2d.drawImage(ghost, x, y, this);
+    }
+    //---------------------------------------------------------------------------------------------------------
+
+    ////////////////////////////////////////////////////////////////2.showIntroScreen function-----------------------------------
+
+
     private void continueLevel() {
 
         short i;
@@ -179,8 +453,8 @@ public class MyPanel extends JPanel implements ActionListener {
 //        doAnim();
 
         if (inGame) {
-            //left to define-------------------------------
-//            playGame(g2d);
+
+            playGame(g2d);
         } else {
             //left to define-------------------------------
 //            showIntroScreen(g2d);
