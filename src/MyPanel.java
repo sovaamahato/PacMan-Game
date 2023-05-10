@@ -10,6 +10,7 @@ public class MyPanel extends JPanel implements ActionListener {
 
     private Color mazeColor;
     private Image ii;
+    private final Color dotColor = new Color(192, 192, 0);
 
     private int pacmanAnimPos = 0;
     private Dimension d;
@@ -45,6 +46,12 @@ public class MyPanel extends JPanel implements ActionListener {
     private short[] screenData;
     private Timer timer;
 
+    private final int PAC_ANIM_DELAY = 2;
+    private final int PACMAN_ANIM_COUNT = 4;
+    private int pacAnimCount = PAC_ANIM_DELAY;
+    private int pacAnimDir = 1;
+
+
     //0=khali thau   4=right border
 
     //1=left border   8=bottom border
@@ -76,6 +83,12 @@ public class MyPanel extends JPanel implements ActionListener {
         addKeyListener(new TAdapter());
         setFocusable(true);
 
+    }
+    @Override
+    public void addNotify() {
+        super.addNotify();
+
+        initGame();
     }
 
     private void loadImages() {
@@ -398,6 +411,88 @@ public class MyPanel extends JPanel implements ActionListener {
     //---------------------------------------------------------------------------------------------------------
 
     ////////////////////////////////////////////////////////////////2.showIntroScreen function-----------------------------------
+    private void showIntroScreen(Graphics2D g2d) {
+
+        g2d.setColor(new Color(0, 32, 48));
+        g2d.fillRect(50, SCREEN_SIZE / 2 - 30, SCREEN_SIZE - 100, 50);
+        g2d.setColor(Color.white);
+        g2d.drawRect(50, SCREEN_SIZE / 2 - 30, SCREEN_SIZE - 100, 50);
+
+        String s = "Press Space to start.";
+        Font small = new Font("Helvetica", Font.BOLD, 14);
+        FontMetrics metr = this.getFontMetrics(small);
+
+        g2d.setColor(Color.white);
+        g2d.setFont(small);
+        g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2);
+    }
+
+
+    private void drawMaze(Graphics2D g2d) {
+
+        short i = 0;
+        int x, y;
+
+        for (y = 0; y < SCREEN_SIZE; y += BLOCK_SIZE) {
+            for (x = 0; x < SCREEN_SIZE; x += BLOCK_SIZE) {
+
+                g2d.setColor(mazeColor);
+                g2d.setStroke(new BasicStroke(2));
+
+                if ((screenData[i] & 1) != 0) {
+                    g2d.drawLine(x, y, x, y + BLOCK_SIZE - 1);
+                }
+
+                if ((screenData[i] & 2) != 0) {
+                    g2d.drawLine(x, y, x + BLOCK_SIZE - 1, y);
+                }
+
+                if ((screenData[i] & 4) != 0) {
+                    g2d.drawLine(x + BLOCK_SIZE - 1, y, x + BLOCK_SIZE - 1,
+                            y + BLOCK_SIZE - 1);
+                }
+
+                if ((screenData[i] & 8) != 0) {
+                    g2d.drawLine(x, y + BLOCK_SIZE - 1, x + BLOCK_SIZE - 1,
+                            y + BLOCK_SIZE - 1);
+                }
+
+                if ((screenData[i] & 16) != 0) {
+                    g2d.setColor(dotColor);
+                    g2d.fillRect(x + 11, y + 11, 2, 2);
+                }
+
+                i++;
+            }
+        }
+    }
+    private void drawScore(Graphics2D g) {
+
+        int i;
+        String s;
+
+        g.setFont(smallFont);
+        g.setColor(new Color(96, 128, 255));
+        s = "Score: " + score;
+        g.drawString(s, SCREEN_SIZE / 2 + 96, SCREEN_SIZE + 16);
+
+        for (i = 0; i < lives; i++) {
+            g.drawImage(pacman3left, i * 28 + 8, SCREEN_SIZE + 1, this);
+        }
+    }
+    private void doAnim() {
+
+        pacAnimCount--;
+
+        if (pacAnimCount <= 0) {
+            pacAnimCount = PAC_ANIM_DELAY;
+            pacmanAnimPos = pacmanAnimPos + pacAnimDir;
+
+            if (pacmanAnimPos == (PACMAN_ANIM_COUNT - 1) || pacmanAnimPos == 0) {
+                pacAnimDir = -pacAnimDir;
+            }
+        }
+    }
 
 
     private void continueLevel() {
@@ -448,16 +543,16 @@ public class MyPanel extends JPanel implements ActionListener {
 
 
         //left to define-------------------------------
-//        drawMaze(g2d);
-//        drawScore(g2d);
-//        doAnim();
+        drawMaze(g2d);
+        drawScore(g2d);
+        doAnim();
 
         if (inGame) {
 
             playGame(g2d);
         } else {
             //left to define-------------------------------
-//            showIntroScreen(g2d);
+            showIntroScreen(g2d);
         }
 
         g2d.drawImage(ii, 5, 5, this);
@@ -502,12 +597,24 @@ public class MyPanel extends JPanel implements ActionListener {
                 }
             }
         }
+        @Override
+        public void keyReleased(KeyEvent e) {
+
+            int key = e.getKeyCode();
+
+            if (key == Event.LEFT || key == Event.RIGHT
+                    || key == Event.UP || key == Event.DOWN) {
+                req_dx = 0;
+                req_dy = 0;
+            }
+        }
+
     }
 
 
         @Override
         public void actionPerformed(ActionEvent e) {
-
+            repaint();
         }
     }
 
