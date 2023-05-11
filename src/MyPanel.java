@@ -44,6 +44,10 @@ public class MyPanel extends JPanel implements ActionListener {
     private int maxSpeed = 6;
     private short[] screenData;
     private Timer timer;
+    private final int PAC_ANIM_DELAY = 2;
+    private final int PACMAN_ANIM_COUNT = 4;
+    private int pacAnimCount = PAC_ANIM_DELAY;
+    private int pacAnimDir = 1;
 
     //0=khali thau   4=right border
 
